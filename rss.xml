@@ -1,4 +1,772 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[RSS Feed of naaga]]></title><description><![CDATA[나는 오늘 아무데나 가기로 했다.]]></description><link>https://2023-naaga.github.io</link><generator>GatsbyJS</generator><lastBuildDate>Mon, 24 Jul 2023 18:21:29 GMT</lastBuildDate><item><title><![CDATA[🤔 작성 가이드]]></title><description><![CDATA[1. 포스트 추가하기  경로에 새로운 마크다운 파일을 생성하여 여러분의 글을 추가할 수 있습니다. 1-…]]></description><link>https://2023-naaga.github.io/writing-guide-kr/</link><guid isPermaLink="false">https://2023-naaga.github.io/writing-guide-kr/</guid><pubDate>Sat, 03 Apr 2021 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;1. 포스트 추가하기&lt;/h2&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[RSS Feed of naaga]]></title><description><![CDATA[나는 오늘 아무데나 가기로 했다.]]></description><link>https://2023-naaga.github.io</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 24 Aug 2023 15:12:53 GMT</lastBuildDate><item><title><![CDATA[나아가, 소셜 로그인 적용기 (OAuth 2.0, JWT,  AccessToken, RefreshToken)]]></title><description><![CDATA[작성자: 루카(github…]]></description><link>https://2023-naaga.github.io/oauth/</link><guid isPermaLink="false">https://2023-naaga.github.io/oauth/</guid><pubDate>Thu, 24 Aug 2023 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;작성자: 루카&lt;a href=&quot;https://github.com/dooboocookie&quot;&gt;(github 링크)&lt;/a&gt;&lt;/p&gt;
+&lt;h1&gt;🎯 글의 목적&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;나아가&lt;/code&gt; 서비스에 로그인 기능 구현&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;로그인 시 필요한 기술에 대한 학습 및 적용기에 대한 설명&lt;/li&gt;
+&lt;li&gt;더불어 팀원들에게 지식 전달 측면에서 작성하는 글&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;나아가 서버에서 소셜 로그인을 적용에 대해서 &lt;code class=&quot;language-text&quot;&gt;전체적인 흐름&lt;/code&gt;을 설명한다.&lt;/li&gt;
+&lt;li&gt;
+&lt;h2&gt;&lt;code class=&quot;language-text&quot;&gt;Access Token과 Refresh Token&lt;/code&gt; 적용 방식을 설명한다.&lt;/h2&gt;
+&lt;h1&gt;❓소셜 로그인을 사용하는 이유&lt;/h1&gt;
+&lt;/li&gt;
+&lt;li&gt;나아가 서비스 특성상 회원가입, 로그인 과정이 단순해야하므로 소셜 로그인 기능 구현 필요&lt;/li&gt;
+&lt;li&gt;사용자의 선택사항을 최대한으로 줄이기 위해서, &lt;code class=&quot;language-text&quot;&gt;일단 카카오 소셜 로그인만&lt;/code&gt; 적용할 예정&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h1&gt;🔑 Oauth2.0 개념&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;OAuth 2.0은 인증을 위한 표준 프로토콜이다.&lt;/li&gt;
+&lt;li&gt;다른 플랫폼(구글, 카카오, 깃헙, ...)의 &lt;code class=&quot;language-text&quot;&gt;리소스&lt;/code&gt; 접근 권한을 위임 받는 것이다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;용어&lt;/h2&gt;
+&lt;h3&gt;Resouce Server (자원 서버) &amp;#x26; Authorization Server (권한 부여 서버)&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;사용하고자 하는 자원을 보관하거나 접근 권하는 주는 서버를 의미한다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;구글, 카카오, 깃헙, ...&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Resource Server&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;자원을 가지고 있는 서버&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Authorization Server&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;자원에 접근할 권한(토큰)을 부여해주는 서버&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;RFC6749(&lt;a href=&quot;https://datatracker.ietf.org/doc/html/rfc6749#section-1.2&quot;&gt;링크&lt;/a&gt;) 에 의하면 이 둘은 따로 보지만, 같이 두는 경우도 있음.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Resouce Owner (자원의 소유자)&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;사용하고자 &lt;code class=&quot;language-text&quot;&gt;자원의 소유자&lt;/code&gt;를 의미한다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;나아가로 예시를 들면,&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;나아가 앱을 사용하는 사용자&lt;/li&gt;
+&lt;li&gt;카카오에 회원정보(리소스)를 보관중인 사람&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Client (자원을 사용)&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;자원을 사용&lt;/code&gt;하고자 하는 주체를 의미한다&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;나아가로 예시를 들면,&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;나아가&lt;/li&gt;
+&lt;li&gt;나아가에서는 기본적인 회원 정보를 사용한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;Oauth2.0의 흐름&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&quot;https://velog.velcdn.com/images/dooboocookie/post/e6a62bef-db83-41f8-a884-5f3a23838e39/image.png&quot;&gt;&lt;/p&gt;
+&lt;p&gt;(출처: &lt;a href=&quot;https://blog.naver.com/mds_datasecurity/222182943542&quot;&gt;https://blog.naver.com/mds_datasecurity/222182943542&lt;/a&gt;)&lt;/p&gt;
+&lt;h3&gt;0. 클라이언트 등록&lt;/h3&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/f9bd042b80f075ea10354dee2932e8c1/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C2.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABDklEQVR42p1STUvDQBDtf/Kn+Mt61psgHtRqxINo24NowNJYMdK0JFpIFzbfyQbXYHemptm2rDVIdXiHx+y+mXnDNObfAxENc5ix9/kW0fiZOm/fPo8mstCfxYQQSilj7D+dP4oCADzPi6Jw5aUeNWI5LOfcndKtOqOYpSznRSGtSv2rpfHUoLG4N6MHK+6Ps56V9EZJSfSXeGBnS/H1ndFsdfqOW3LAcupF8mJ/R9d2HZIfXTmn3cmB9tTqvJ3cOIeX5t7x41nXlmIc02wwtOMkVZfsk3Ya6vJDBVg7q7AaO/RpEPgbloIod6e+EKKsBrCoCRXWZCkWgEK+KwHwCTBTto0Kwfptq9f2+518Ae+Qet5nzEAbAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    2&apos; title=&apos;&apos; src=&apos;/static/f9bd042b80f075ea10354dee2932e8c1/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C2.png&apos; srcset=&apos;/static/f9bd042b80f075ea10354dee2932e8c1/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C2.png 170w,
+/static/f9bd042b80f075ea10354dee2932e8c1/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C2.png 340w,
+/static/f9bd042b80f075ea10354dee2932e8c1/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C2.png 680w,
+/static/f9bd042b80f075ea10354dee2932e8c1/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C2.png 1020w,
+/static/f9bd042b80f075ea10354dee2932e8c1/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C2.png 1360w,
+/static/f9bd042b80f075ea10354dee2932e8c1/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C2.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Client가 Resource Server의 자원을 이용하기 위해 등록하는 과정이다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Resource Server에서 Client임을 식별하기 위한 정보가 필요하다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Redirect URI&lt;/li&gt;
+&lt;li&gt;로그인 인증 성공 시, 리다이렉트 시킬 위치를 지정하는 URI&lt;/li&gt;
+&lt;li&gt;OAuth 과정에서 정보들(Authorization Code)을 다른 URI로 탈취당하지 않기 위함&lt;/li&gt;
+&lt;li&gt;https만 허용&lt;/li&gt;
+&lt;li&gt;Client ID, Secret&lt;/li&gt;
+&lt;li&gt;Resource Server가 Client임을 식별하기 위한 장치&lt;/li&gt;
+&lt;li&gt;Client Secret은 유출되지 않도록 조심&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;1. 로그인 요청 (로그인 페이지 보여주기)&lt;/h3&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/2b5b45278b06a42b7983bbe599e0dd83/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C3.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABO0lEQVR42pVRa0/CMBTlX/lH/GV+9YMfTExMfKBGo1GZMVGIiG4y0gLdQ4du6V4MtjnKWiyvMRI0cnLT3JzmnNt7WhgtgzH2IsOgF43+gcKScnKe3N6/NbWp0RpiQgjG2LIsx3HWmJymaRiGqqpKkmSaJtdzJrfL6ipkD06SRK7X4zjWdb3dRtyLDNl3QoZD8tfk6W6a/t4AgFsAABBChmF01Evr40797D3K7hP0nltBFfrVpl9rBeWGJ6JgNvn6obZVLJWB0oYAQihKddvpXOxsVM42la/+/pVyJOi7p9JxSTu8UfbO5e2D16KApmLWsgIRItfz4ijqdn0e2GBAHFPw7fJ8LV409y1sEZiDLRvj7KtnpNs3OpgnxwlKxzSdVNbM06YsndxnGLtQQinJpc1yDVukvRKZy2/4AWZYc/157gnPAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    3&apos; title=&apos;&apos; src=&apos;/static/2b5b45278b06a42b7983bbe599e0dd83/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C3.png&apos; srcset=&apos;/static/2b5b45278b06a42b7983bbe599e0dd83/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C3.png 170w,
+/static/2b5b45278b06a42b7983bbe599e0dd83/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C3.png 340w,
+/static/2b5b45278b06a42b7983bbe599e0dd83/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C3.png 680w,
+/static/2b5b45278b06a42b7983bbe599e0dd83/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C3.png 1020w,
+/static/2b5b45278b06a42b7983bbe599e0dd83/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C3.png 1360w,
+/static/2b5b45278b06a42b7983bbe599e0dd83/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C3.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code class=&quot;language-text&quot;&gt;OOO으로 로그인&lt;/code&gt;하기 버튼을 누르거나 &lt;code class=&quot;language-text&quot;&gt;로그인이 필요한 기능에 접근했을 때 리다이렉트로&lt;/code&gt; 발생되는 요청이다.&lt;/li&gt;
+&lt;li&gt;&lt;code class=&quot;language-text&quot;&gt;유저(리소스 오너)&lt;/code&gt;가 &lt;code class=&quot;language-text&quot;&gt;나아가(클라이언트)&lt;/code&gt;에게 로그인 요청을 했을 때&lt;code class=&quot;language-text&quot;&gt;카카오(리소스 서버)&lt;/code&gt;로 로그인 요청을 보낸다.&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;로그인 요청을 할 땐 아래 항목을 포함해서 보낸다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;client_id: 어떤 클라이언트(나아가)임을 나타내는 정보&lt;/li&gt;
+&lt;li&gt;scope: 리소스 오너(유저)가 동의한 리소스 항목&lt;/li&gt;
+&lt;li&gt;redirect_uri: 인가 코드를 전달 받을 클라이언트(나아가)의 URI&lt;/li&gt;
+&lt;li&gt;response_type: 응답을 어떤 타입으로 받을지 설정, 인가 코드로 응답을 받을 것이므로 code로 고정&lt;/li&gt;
+&lt;li&gt;...&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;2. 로그인 정보 제공하고 Authorization Code 발급 받기&lt;/h3&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/f6ee6c39889019501503ebd8ee01ea8b/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C4.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABVklEQVR42o1R226CQBD1p/oh/bT+QN/61gejpkRTvKQSpdqWVNOVRpoFBEEWYRUQ0F27IrYxtdGTyWQymzNn5mxhewxCyOsQ4EW4vQCFv60S/zSQISsopefJTG19gKZpqgoRci5VZhxZlhVFsW3bdd0kSdI0zV5pFmyF05GvHQQBxtgwjLOrnryZ+oslXgZRFJmmqes6G7d0OzF+M911e4C6H/PeyBeB9wy8nuwLw7k0xjm51u7fFOuiDMfyCAAgSe8OmlRur4TitWoHpSbkBP2+OuQEjWvD4iO4Kw/KLWVPpp8WlsB47nlRGDLPIIRxkqBpI/RFxVg9dEy+b1WECctcx6x2zZo4nXmrXBnNLMeZ7b+HGRbHMSsctLAspOh+vTflRbXRM6vCV7Nv8V2t9WIhP8nJG0I3hNAMP35QkhKS/ufWr9vH3XxElncpG70Lcig2O6HtNz1KbaejM4k9AAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    4&apos; title=&apos;&apos; src=&apos;/static/f6ee6c39889019501503ebd8ee01ea8b/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C4.png&apos; srcset=&apos;/static/f6ee6c39889019501503ebd8ee01ea8b/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C4.png 170w,
+/static/f6ee6c39889019501503ebd8ee01ea8b/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C4.png 340w,
+/static/f6ee6c39889019501503ebd8ee01ea8b/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C4.png 680w,
+/static/f6ee6c39889019501503ebd8ee01ea8b/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C4.png 1020w,
+/static/f6ee6c39889019501503ebd8ee01ea8b/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C4.png 1360w,
+/static/f6ee6c39889019501503ebd8ee01ea8b/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C4.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;리소스 오너(유저)는 리소스 서버(카카오)의 &lt;code class=&quot;language-text&quot;&gt;로그인 페이지&lt;/code&gt;를 제공 받고, 로그인 정보를 입력하거나 로그인된 정보를 제공한다.&lt;/li&gt;
+&lt;li&gt;Authorzation Code를 응답 받는다.&lt;/li&gt;
+&lt;li&gt;Redirect URI로 리다이렉트 된다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;3. Authorization Code ↔️ OAuth Access Token 교환&lt;/h3&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/3ae98875d0315a5c7867bc29ca1dc692/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C5.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABQElEQVR42pWR307CMBTGeSifxDfzAbz0zgSDikOHkMBwYwomm5QNF2GwrbDRDWSzQlvcvwtFouHku/jS9NfTc77C9mcxxjoqWCzDxG//qcLvo1K1oWjD2FCW1AFwfNu2LcdxQB8QQg7uHIZhFEW6rlvWxPcRxp/po3u0B8YYm6bpuq6iauv15o/Zc5iRTbB8jzDOfk5pAgxeiqu57CDSVDyxh+R+IAFfAkjWAkFF3cEih++Ezknx/skYp3ui2ZquTo8eSsej6apUH3LC+LyicoJZbgwvquDsUrlpvmUw0+HiGbwiP8g6Z0ueTvgwkAzro9yyeRleC1ZFcmLDiXZFtOXePO/szaDrznZGmnlLCD1jHNRkyIuj+iPkmkatPWl0p7etUVdDOUwoI5TupErpOtZhUX3PPAspfToRTZV7xr4AH7lwIQPQm0kAAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    5&apos; title=&apos;&apos; src=&apos;/static/3ae98875d0315a5c7867bc29ca1dc692/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C5.png&apos; srcset=&apos;/static/3ae98875d0315a5c7867bc29ca1dc692/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C5.png 170w,
+/static/3ae98875d0315a5c7867bc29ca1dc692/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C5.png 340w,
+/static/3ae98875d0315a5c7867bc29ca1dc692/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C5.png 680w,
+/static/3ae98875d0315a5c7867bc29ca1dc692/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C5.png 1020w,
+/static/3ae98875d0315a5c7867bc29ca1dc692/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C5.png 1360w,
+/static/3ae98875d0315a5c7867bc29ca1dc692/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C5.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Redirect된 나아가 서버에서 Authorization Code를 가지고, 권한 부여 서버로 Access Token을 발급 요청한다.&lt;/li&gt;
+&lt;li&gt;권한 부여 서버가 Authorizaion Code에 대한 리소스 오너의 리소스로 접근 가능한 OAuth Access Token을 발급한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;4. 로그인 처리&lt;/h3&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/8ee823b90b69c72936a47e0ce26d41f5/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C6.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABNUlEQVR42pVS206DQBTsL/krfppvfoBvPlSMFbSEJlwCYsWkTRGVCC7Q5dqlodHS7tYtoNZqYjuZh5OTzMw5u6e1+glCyN3QzKez1Q5o/W4xvDiwnNpoJ3FZlgih+XxeFIXngTiO90immjAMAQBpmpaLNeolKtIR/ub32FTge96/o24nV+Z4HEbAD2iJMa4t8lh+z40gXUiDRB1l+gPSzIlmZrqF5GFmPOVN8rXUPzoT7p1KTKh83WwfHyjMoRsWTM9hZXDKDVn5tSM6bd48OR9cSi+1mDzC3DCf08lk85GjgJ8hzfbfOkrQ1eGF7HPamBasGnBqoI/SJjmJYBxHWytFyRTCxAZI0GFXdXu3kJVs4cYTjfBKcQ0ra8RLTJafq34B45JyvyPZvLb6nyrrNXHFpibkA+S3cUP2gOyAAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    6&apos; title=&apos;&apos; src=&apos;/static/8ee823b90b69c72936a47e0ce26d41f5/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C6.png&apos; srcset=&apos;/static/8ee823b90b69c72936a47e0ce26d41f5/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C6.png 170w,
+/static/8ee823b90b69c72936a47e0ce26d41f5/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C6.png 340w,
+/static/8ee823b90b69c72936a47e0ce26d41f5/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C6.png 680w,
+/static/8ee823b90b69c72936a47e0ce26d41f5/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C6.png 1020w,
+/static/8ee823b90b69c72936a47e0ce26d41f5/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C6.png 1360w,
+/static/8ee823b90b69c72936a47e0ce26d41f5/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C6.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;이제 클라이언트가 리소스 오너의 리소스를 리소스 서버로 부터 받아올 수 있는 OAuth Access Token이 있으므로 로그인 처리를 하면 된다.&lt;/li&gt;
+&lt;li&gt;세션을 사용하던, JWT를 사용하던 사용자(리소스 오너)에게 로그인이 되었다는 응답을 준다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;5. Access Token 으로 정보 조회&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;https://velog.velcdn.com/images/dooboocookie/post/1e0c64c3-cb29-49ae-ac43-d75155d67012/image.png&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;필요 시 리소스 서버로부터 리소스 오너의 리소스가 필요하다면 3번에서 발급받은 Access Token을 사용하면된다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h1&gt;🪙 Token 방식 (JWT)&lt;/h1&gt;
+&lt;h3&gt;JWT 개념&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;JSON Web Token&lt;/li&gt;
+&lt;li&gt;JSON 형식으로 쉽게 읽히고 해석되기 위한 토큰&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;필요한 정보에 대해서 자체적으로 가지고 있다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;회원에 대한 정보, 유효기간,  ...&lt;/li&gt;
+&lt;li&gt;서버에 유저 상태를 필수적으로 저장할 필요는 없다.&lt;/li&gt;
+&lt;li&gt;서버 확장에 용이하다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;JWT 구조&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;https://i2.wp.com/www.opennaru.com/wp-content/uploads/2018/08/JWT_Stacks.png?zoom=2&amp;#x26;fit=1200%2C300&quot;&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;JWT는 &lt;code class=&quot;language-text&quot;&gt;헤더&lt;/code&gt;, &lt;code class=&quot;language-text&quot;&gt;페이로드&lt;/code&gt;, &lt;code class=&quot;language-text&quot;&gt;서명&lt;/code&gt;으로 구성되어 있고, &lt;code class=&quot;language-text&quot;&gt;점(.)&lt;/code&gt;으로 구분한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;1. 헤더&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;토큰 타입이나 알고리즘에 대한 정보를 포함한다.&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Base64Url로 인코딩된다.&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;{
+&quot;alg&quot;: &quot;HS512&quot;,
+&quot;typ&quot;: &quot;JWT&quot;
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h4&gt;2. 페이로드&lt;/h4&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Claims이라고 불리는 토큰 자체 데이터를 포함한다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Registered claims: 유효기간(exp), 토큰의 대상(sub), 발행처(iss), 발행 시간(iat), ...&lt;/li&gt;
+&lt;li&gt;Public claims: IANA JWT Registry에 등록해서 다른 조직과 충돌을 피하고자 하는 공용 claims을 등록한다.&lt;/li&gt;
+&lt;li&gt;Prviate claims: 사용자의 권한 정보 같이 어플리케이션 내에서만 사용되는 클레임을 나타낸다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Base64Url&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;{
+&quot;sub&quot;: &quot;{\&quot;memberId\&quot;:1,\&quot;authId\&quot;:1,\&quot;authType\&quot;:\&quot;KAKAO\&quot;}&quot;,
+&quot;exp&quot;: 4845877047
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;3. 시그니처&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;토큰의 무결성을 보장하는 정보를 포함한다.&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;아래의 정보를 헤더에서 명시된 알고리즘으로 생성한다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;인코딩된 헤더.인코딩된 페이로드&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;시크릿 키&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;HMACSHA512(
+base64UrlEncode(header) + &quot;.&quot; + base64UrlEncode(payload),
+시크릿 키
+)&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h3&gt;Access Token&lt;/h3&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;사용자의 권한을 나타내는 토큰&lt;/li&gt;
+&lt;li&gt;토큰 자체로 토큰의 담겨있는 유저의 정보에 접근이 가능하다.&lt;/li&gt;
+&lt;li&gt;탈취 위험성 때문에 토큰의 수명이 짧다.&lt;/li&gt;
+&lt;li&gt;stateless한 HTTP 통신에서 인증처리를 한 사용자임을 나타내기 위해 &lt;code class=&quot;language-text&quot;&gt;Authorization&lt;/code&gt; 헤더에 포함되어 요청이 간다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Refresh Token&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Access Token이 매우 짧은 수명을 갖고 있으므로, 그 시기마다 로그인 요청을 하지 않고 Refresh Token을 통해서 &lt;code class=&quot;language-text&quot;&gt;Access Token을 재발급&lt;/code&gt; 받기 위함이다.&lt;/li&gt;
+&lt;li&gt;Access Token에 비해 수명이 매우 길다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h1&gt;📄 나아가 적용&lt;/h1&gt;
+&lt;h2&gt;로그인 과정&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;OAuth와 JWT를 기반으로 로그인 기능을 구현한다.&lt;/li&gt;
+&lt;li&gt;일단 나아가 같은 경우, 안드로이드 앱을 기반으로 한다.&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;안드로이드 단에서는 Kakao SDK for Android(&lt;a href=&quot;https://developers.kakao.com/docs/latest/ko/kakaologin/android&quot;&gt;링크&lt;/a&gt;)를 기반으로 하여 로그인 기능을 구현하였다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;위 OAuth 흐름에서 설명했던 내용 중, 인가 코드를 카카오 액세스 토큰으로 교환하는 것 까지 안드로이드에서 일어난다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;1. 카카오에서 Kakao Access Token을 받아온다.&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/04614d31142bdb27f1d6bbaea9e9e917/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAAA9klEQVR42p2S22rCQBCGfYg+Yh+oT9D20ifwwhu98UJaECxWkcSIosVIUg8xu9k5dbKUNh5K0Z9lWWb+b2eXmZqIMEu6yZxDIrK2+BEhNNqd92CmHlNNeCFiTRMESadxv160iAXBsRfplSK9wag/DEoPEVekpPIljMWs/nC3ih7VjuikIkI0xrC/6ChO9A3nDidJvCsf5jR6bOJz8hfeGhjHeZSYt2WW7nO5ZP0TtkBx5sJ1pruWPqn8D+w/BpP5R3cQFtbyVZX1tIjT5+bLU+t1dzjItTAQj6fzKAyKG56tTdtuPrUlt8DlkPkFAPZski5KbWr+AqUOgVa6l6dhAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    17&apos; title=&apos;&apos; src=&apos;/static/04614d31142bdb27f1d6bbaea9e9e917/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png&apos; srcset=&apos;/static/04614d31142bdb27f1d6bbaea9e9e917/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png 170w,
+/static/04614d31142bdb27f1d6bbaea9e9e917/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png 340w,
+/static/04614d31142bdb27f1d6bbaea9e9e917/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png 680w,
+/static/04614d31142bdb27f1d6bbaea9e9e917/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png 1020w,
+/static/04614d31142bdb27f1d6bbaea9e9e917/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png 1360w,
+/static/04614d31142bdb27f1d6bbaea9e9e917/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;카카오에게 유저가 로그인 정보를 제공하고 Kakao AccessToken을 제공 받는다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;2. 나아가 서버로 로그인 요청&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/fae8f5c070d730f1afe3112ced0dc8c4/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABSElEQVR42oVRS1KDQBDNGbyj1/EI6tIT6MKF2WThJpoFaiUEImWskCEwEGB+3TM2kG8VKV/1Ymqm36enB845a13KS60BEaVUByCYx+How4+oR5w+tACAAT2g2YyertnyBa0Do20LJEnn3ryvyaff9CDaExCT+A0Z5PfDzVUc3FI7gHYnQAAhhG2Fzu4Rd+RaVEHwXhSZUrpWplSgoDGiolEM2q56yHme+74fLhae5+Wc/+bKZyLeqk1lklILDc2fWGfwzH1HllIyxuaBz9YrOisDgC7e6iiTYSoSkqgMCdUa+2PTYPPZ9HXisUJk21pI9ZNWa15nJRmjBttUb2w6LePN/fP4bjierfiKJQlbR3GapGmRc2pyfTiSaZ5pGIXzWbdACm+MobVSkV1XF8m0tJxntBLq7qys+wdHstvL02fJFocI6gK6dH+8G3sXgwJPmwAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    18&apos; title=&apos;&apos; src=&apos;/static/fae8f5c070d730f1afe3112ced0dc8c4/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png&apos; srcset=&apos;/static/fae8f5c070d730f1afe3112ced0dc8c4/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png 170w,
+/static/fae8f5c070d730f1afe3112ced0dc8c4/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png 340w,
+/static/fae8f5c070d730f1afe3112ced0dc8c4/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png 680w,
+/static/fae8f5c070d730f1afe3112ced0dc8c4/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png 1020w,
+/static/fae8f5c070d730f1afe3112ced0dc8c4/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png 1360w,
+/static/fae8f5c070d730f1afe3112ced0dc8c4/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;나아가의 로그인 처리를 위해서 카카오에서 받급받은 Kakao Access Token을 가지고 로그인 요청을 한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;http&quot;&gt;&lt;pre class=&quot;language-http&quot;&gt;&lt;code class=&quot;language-http&quot;&gt;POST /auth
+&lt;span class=&quot;token header&quot;&gt;&lt;span class=&quot;token header-name keyword&quot;&gt;Content-Type&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token header-value&quot;&gt;application/json&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;token application-json&quot;&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+		&lt;span class=&quot;token string-property property&quot;&gt;&quot;token&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;q1q2w2w3e3e4r4t5t6yu7u78&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+		&lt;span class=&quot;token string-property property&quot;&gt;&quot;type&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;KAKAO&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h4&gt;3. 카카오 서버로 부터 정보를 받아온다.&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/2d7e901f6eaf096d3be24abe724fa093/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C19.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABR0lEQVR42oWRW07DMBBFuwYWyXbYABL8sgGEhJD6gxA/BVUKoObRPGiV1kkcu3X8tpk2iFLR0it/ee6x584MvPfO+QavpTLW2o4LLkTHpVLaWXM7fHyLcvDApdyXMWYABaPqp7vzIntIG5tWq6TiRUXqppGCvwQf4/cIPPCu+yUggd/AWuY3F2dFePlJfILoeM6KZZvP5i0hYOKcg9vvC976hruOJcnrimIhVcMk7nTLTdoIKgxksn/IHUwIiaIoTdMgCDDGfQ2tVdZwOCWV7h9YCIEQSpIILUuYCdxCTRlXYDFrpdDWH9KubWt0HE6exwGqKsYY5KSELvAaMwFtn4Bni/r6fnQ1HIVxXJZlXddZltUVohQGdupnbd1kmk/jsF8gBOk3AfJHtIPBSloMKwGsz3xwSIdhv00GRxsjtvppQR4RlLTWX5MKeO4x09dvAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    19&apos; title=&apos;&apos; src=&apos;/static/2d7e901f6eaf096d3be24abe724fa093/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C19.png&apos; srcset=&apos;/static/2d7e901f6eaf096d3be24abe724fa093/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C19.png 170w,
+/static/2d7e901f6eaf096d3be24abe724fa093/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C19.png 340w,
+/static/2d7e901f6eaf096d3be24abe724fa093/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C19.png 680w,
+/static/2d7e901f6eaf096d3be24abe724fa093/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C19.png 1020w,
+/static/2d7e901f6eaf096d3be24abe724fa093/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C19.png 1360w,
+/static/2d7e901f6eaf096d3be24abe724fa093/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C19.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;AuthClient 객체의 카카오와 통신하는 메서드 호출&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;AuthClient: RestTemplate으로 외부 서버와 통신하는 객체&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;클라이언트로 부터 받은 Kakao Access Token으로 카카오 리소스 서버에게 유저 정보를 요청한다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;API 문서 ➡️ &lt;a href=&quot;https://developers.kakao.com/docs/latest/ko/kakaologin/rest-api#req-user-info&quot;&gt;링크&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;2번 요청 시, 파라미터로 넘긴 정보 값들에 대해서 해당 사용자가 scope를 동의했으면, 유저 정보를 넘겨준다. (API 문서 참고)&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;AuthInfo 객체를 생성해서 반환한다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;카카오에서 전달 받은 유저의 정보를 바인딩하기 위한 DTO이다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4&gt;4. 회원을 조회하거나 저장하거나&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/c18140553a892b751c542e38bbe98b5f/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C20.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABYUlEQVR42n1Sy07DMBDsP/CRfA5XbnDlBwCJSy8IIaRWVAopSWznAcrDaR4OiZ3YTtikSKWt2lEO9npnZ3eys2EY+n7I8p+2U1rrpmmEEF3XSSl7re7nzx+ODzlciHYfSqkZPKgufXm8DNCD64WEIIwxY6xkTHC+NNYr04EcqNv/AzCBP5Jl699dXQSf18FXbllr0zSTJPE8rygKrRTnHLKHfUCtP3LT1BgvqyrnXAABeobOCSFVxaa8Q+aOXJal4ziu6xqGkef5ViTLMt/3bduu63oy5YQyiFBKMXZoEsEZhoE3EA+CADrfXk8qjyclkW29rgyapiAFc4JdcRyDa8MJ7Mjf8eb2aXEzX9gIxVEUJykmHk034aZoWqn0WbLUvUV8gmy4d11LEmaG7N2lb4j6mRBSnyPDYGUBVsMiCIhCpObcRjiOwmOrDsmjn9MnlRIToFAFP4pV4mixtoA4rOAvDYx0qjjFMC4AAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    20&apos; title=&apos;&apos; src=&apos;/static/c18140553a892b751c542e38bbe98b5f/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C20.png&apos; srcset=&apos;/static/c18140553a892b751c542e38bbe98b5f/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C20.png 170w,
+/static/c18140553a892b751c542e38bbe98b5f/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C20.png 340w,
+/static/c18140553a892b751c542e38bbe98b5f/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C20.png 680w,
+/static/c18140553a892b751c542e38bbe98b5f/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C20.png 1020w,
+/static/c18140553a892b751c542e38bbe98b5f/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C20.png 1360w,
+/static/c18140553a892b751c542e38bbe98b5f/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C20.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;AuthInfo 담겨 있는 email 정보를 토대로 해당 회원이 있는지 파악한다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;있으면, 해당 회원을 find 해온다.&lt;/li&gt;
+&lt;li&gt;없으면, 새로운 회원을 create 한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;5. JWT 토큰 생성&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/747ba17a37d5e31c45c783deb6b7de8c/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C21.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABtElEQVR42m1Sy47TQBDMP+xH8jlc9wZXfgCQuKyQEOKQ3U2EcRy/x96N7bHj57zsGZtyIlYCttWHnu6u7uqyN8uyzPNyrgc1amMM51xKOY7jNE2z0R/vvv3yCHrUJTONai1prZTSWm9Q0GP5/fObxP8Uxacw9IMg6Lqu7TopxIN12B88jM/zrKSUVKysO8SCc0xZwZMiH97eJM5tktbH48G27aIo4jhumsZoLaUoOx5GxI/IY9JmtEriuOsHMFjBnLMgeOj7WggJAEaCeRiG2I9q1qmvfvvzxPfw5yGsBGVajhrnbdq29TwviiLLsuq6niHAspzPZ0KI67qcsUPBgfcos7MhKIVHuVOwuOJcyA2WUEqDwKNFhhgyAIzlJEnShDw3ws5ZWsteQc5ZX9zMi5y0VGqlbfTku8cfe4uWJWMMmoNwnudD39uFGJRRGoALpT+GHnUFP+XV+y/37+7uXc/PLwbBQSc7nYQQVy7z365fwJOZjyEJfRdvEMb9juPsdrvtdpumqZDyCl5e3YzZbQOp0SaRRQbkoRYomPkf1H/gF1bT+lVXw6C+73E5YvWaIY//7TfVBmvJlLESgwAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    21&apos; title=&apos;&apos; src=&apos;/static/747ba17a37d5e31c45c783deb6b7de8c/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C21.png&apos; srcset=&apos;/static/747ba17a37d5e31c45c783deb6b7de8c/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C21.png 170w,
+/static/747ba17a37d5e31c45c783deb6b7de8c/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C21.png 340w,
+/static/747ba17a37d5e31c45c783deb6b7de8c/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C21.png 680w,
+/static/747ba17a37d5e31c45c783deb6b7de8c/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C21.png 1020w,
+/static/747ba17a37d5e31c45c783deb6b7de8c/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C21.png 1360w,
+/static/747ba17a37d5e31c45c783deb6b7de8c/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C21.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;jjwt(JWT 라이브러리)를 이용하여 JWT 토큰을 생성한다.&lt;/li&gt;
+&lt;li&gt;Token의 유효성을 검사하기 위해 나아가만의 Secret key 정보도 JWT 시그니처에 포함시킨다.&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;토큰의 Claims 정보는 다음과 같다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;회원의 아이디&lt;/li&gt;
+&lt;li&gt;Oauth 인증처&lt;/li&gt;
+&lt;li&gt;Oauth 서버에서 사용하는 회원 아이디&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;수명&lt;/p&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;{
+&quot;sub&quot;: &quot;{\&quot;memberId\&quot;:1,\&quot;authId\&quot;:1,\&quot;authType\&quot;:\&quot;KAKAO\&quot;}&quot;,
+&quot;exp&quot;: 4845877047
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;수명&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Access Token은 30분&lt;/li&gt;
+&lt;li&gt;Refresh Token은 14일&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Access Token과 Refresh Token를 한 쌍으로 하는 AuthToken 엔티티 객체를 생성하여 반환한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;6. JWT 토큰 저장&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/2b5ee77d50859af615278852d2be6b34/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C22.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABrklEQVR42l1Ry07DMBDsP/CRfA5XbnDlBwCJCxeEOLRVkdImzatNQt4079iOnYRx0iLEKoq8u56d2fFiHMdhGE9ZzTrR933btpTSrus450MvHl/ftoaDO0xWBIpzizEmhFigIbr0/fnaNZ8Ox8C2TcuyyrIsypISslbUz52B8WEYJklyOBzSNI3jGByYIsGcOQ83V65263rZfq/udju0j8djnue9EJSS0+nkuq7jOKqqRlGEVl3X4Jfgtm0sa11VGSEUAIyEctu2wY9uEATr1XqcAnv9HqB8URSFYRjQoyhKlmUDDBhHUIFH13XIgxDUJ2uG8RJnMEiwjGUZSRziDBvQAznAnuf5vq+pKv6EkL/4M1ieBDf1/cenkqRp0zRoQDB2w2LKdltWNWPdLJjxniK5hAR/Rd/3L6u715VumNEUMBxy4HCU1XFBnJxtw8ZMWvu79SO4GVVVdTaM98PedmxTZ9NU7K9p2mazWS6XrusxSgsijKQJSiYvc47t5gef3lmIIofVBNVZHsTDLUi4qB38gtVM/DdsTobp4/JVZWAQhGFzmUg9bA4k9BIg/wE9ZGpO2ca+PAAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    22&apos; title=&apos;&apos; src=&apos;/static/2b5ee77d50859af615278852d2be6b34/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C22.png&apos; srcset=&apos;/static/2b5ee77d50859af615278852d2be6b34/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C22.png 170w,
+/static/2b5ee77d50859af615278852d2be6b34/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C22.png 340w,
+/static/2b5ee77d50859af615278852d2be6b34/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C22.png 680w,
+/static/2b5ee77d50859af615278852d2be6b34/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C22.png 1020w,
+/static/2b5ee77d50859af615278852d2be6b34/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C22.png 1360w,
+/static/2b5ee77d50859af615278852d2be6b34/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C22.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;토큰은 5번에서 보여지듯 토큰 자체가 정보를 갖고 있고, 수명까지 가지고 있다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;그래서 서버는 유저의 로그인 정보인 토큰을 필수적으로 저장할 필요는 없다.&lt;/li&gt;
+&lt;li&gt;유저가 헤더에 담아오는 토큰 정보를 보고 어떤 회원인지 판단하면 된다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;하지만, Refresh Token 관리를 위해서 서버에 저장하기로 결정했다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th align=&quot;center&quot;&gt;id&lt;/th&gt;
+&lt;th align=&quot;center&quot;&gt;access_token&lt;/th&gt;
+&lt;th align=&quot;center&quot;&gt;refresh_token&lt;/th&gt;
+&lt;th align=&quot;center&quot;&gt;member_id&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td align=&quot;center&quot;&gt;1&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;4r324r3.13r344v.32r443&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;4r324r3.13r34f4.32r443&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&quot;center&quot;&gt;2&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;4r324r3.3r234b4.32r443&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;4r324r3.3r234tg.32r443&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;4&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td align=&quot;center&quot;&gt;...&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;...&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;...&lt;/td&gt;
+&lt;td align=&quot;center&quot;&gt;...&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h4&gt;7. 응답&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/0e1a0eae5b542db4170b96d6a9d9e8b3/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C23.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABt0lEQVR42nVSyY7TQBDNV/CJfBAXuPEBXDixiAuXEUhRhhmGyTixHa+x2/vem91tnuMwQkiUWu52db16Va96M8+z1nNZ9UJOSilKKedcSjmOo1bTh683e8tHjFg8E5zrlRBimqYNLkaZf/v0MrA/ul7sOLbjOG3b1nUtGLt7NH4aFtITQrIsc103z/M0TcGBLAtYcv/dqxe+8SY8V8ejsd8/ZVkex6SqaqRnjJVlGQSB7/uGYSRJ4nle3/fg31A5WTkN6qxCUC9Ijp1rrdEDkGqeI5L8uL2dL4a+ng+ofNN0tGWyZVPWiYqOnVB8vCypxLiEHkwLzBdp9PzHrmDKBdwtl2Ej0n50C3ZMB6fkVs5OBSuZyooSFaOcv/FXsFS664c4ira/DoTEVdUMlBVFUTct4+LkBU3bccbQApAArLNYbREsTIq3n7evv2zf3zyEZyiVfH84RjGJoiiOYyiEg23b0AmDwBlqd123CLaMSmnTDU625RS05xJBj0+Hu/v73W4Xns+gAi04QQVyYOBZB76AcdfUEJnBu+pJh8E0TXA+y/uPXXtef/Rl4e2sKfBFYXgq/P8G8t/OR2wxXQQDsQAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    23&apos; title=&apos;&apos; src=&apos;/static/0e1a0eae5b542db4170b96d6a9d9e8b3/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C23.png&apos; srcset=&apos;/static/0e1a0eae5b542db4170b96d6a9d9e8b3/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C23.png 170w,
+/static/0e1a0eae5b542db4170b96d6a9d9e8b3/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C23.png 340w,
+/static/0e1a0eae5b542db4170b96d6a9d9e8b3/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C23.png 680w,
+/static/0e1a0eae5b542db4170b96d6a9d9e8b3/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C23.png 1020w,
+/static/0e1a0eae5b542db4170b96d6a9d9e8b3/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C23.png 1360w,
+/static/0e1a0eae5b542db4170b96d6a9d9e8b3/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C23.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;이제 유저(안드로이드 앱)에게 Access Token과 Refresh Token이 전달되게 된다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;안드로이드 로컬 스토리지에 저장해 뒀다가, 인증 정보가 필요한 요청에는 Authorization 헤더에 해당 정보를 포함해서 보내면 된다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/3473739efe7cb14bbb3a2687f4664cf5/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C24.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABoElEQVR42nWR226iUBSGfYd5yD7O3Da97N28QNu0aTI3zaRNHEwTEeWkgCLqiICyOWygH2APmaTrYmdnrf0f1r8HTdPUdbMPj3khq6pK0zTLsqIoyrKsK3nz+0k1HN7kbUfS7Ed5nkspBwxksftzd+Gat/OFb9umZVlxHEdxnAmhjLXXiQH9er3ebrfz+Xy32202GzRgacFl7vz6+cOdXrpeOJtpk8mE8WKxOBwOlZRZJvb7veu6juNomhYEAaPj8Yh+C07Tk2UpSRIKkQGAEue2baPP1Pd95a/SdMVeHxecD6IoMgwDP+PxOAzDmgCaBil0dF3HHkbod9HUzXudwYiwjGUZ243PnRjaePIcsOd5q9VqOp1yCiG+4s/g9ialqc9eXlUUTqcT+CRJ2I3FsIP5nhQkgP4v+mrBXvDv+lG5eni+u39AZB0Ew+GQzEgYCi7L5dI0TXIiCB7Qgf0cWFnVM9uxDJ1IUeaRqqqj0QgKnPeyaCKFOBg6/Yd3/yxldCBqQbfPk5xIC9mPeP+rz53bJLowio6Vgghj/bbfFeJvH5FpJ1v5zOkAAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    24&apos; title=&apos;&apos; src=&apos;/static/3473739efe7cb14bbb3a2687f4664cf5/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C24.png&apos; srcset=&apos;/static/3473739efe7cb14bbb3a2687f4664cf5/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C24.png 170w,
+/static/3473739efe7cb14bbb3a2687f4664cf5/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C24.png 340w,
+/static/3473739efe7cb14bbb3a2687f4664cf5/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C24.png 680w,
+/static/3473739efe7cb14bbb3a2687f4664cf5/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C24.png 1020w,
+/static/3473739efe7cb14bbb3a2687f4664cf5/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C24.png 1360w,
+/static/3473739efe7cb14bbb3a2687f4664cf5/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C24.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;전체적인 흐름&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;인가 과정&lt;/h2&gt;
+&lt;h4&gt;1. Interceptor와 Argument Resolver&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;AuthInterceptor의 역할&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;인가 처리를 위해서 인증이 된 사용자인지를 확인하는 과정을 거친다.&lt;/li&gt;
+&lt;li&gt;인가가 필요한 요청URL을 매핑한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;java&quot;&gt;&lt;pre class=&quot;language-java&quot;&gt;&lt;code class=&quot;language-java&quot;&gt;    &lt;span class=&quot;token annotation punctuation&quot;&gt;@Override&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;addInterceptors&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;InterceptorRegistry&lt;/span&gt; registry&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        registry&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;addInterceptor&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;authInterceptor&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;addPathPatterns&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;/**&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;excludePathPatterns&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;/h2-console/**&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;excludePathPatterns&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;/auth/**&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;excludePathPatterns&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;/**/*.png&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/**/*.jpg&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/**/*.jpeg&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/**/*.gif&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/**/*.ico&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;excludePathPatterns&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;/ranks&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;PlayerArgumentResolver의 역할&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;컨트롤러의 파라미터로 들어오는 PlayerRequest(플레이어 아이디)를 바인딩하기 위해 생각한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;java&quot;&gt;&lt;pre class=&quot;language-java&quot;&gt;&lt;code class=&quot;language-java&quot;&gt;    &lt;span class=&quot;token annotation punctuation&quot;&gt;@Override&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;supportsParameter&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;MethodParameter&lt;/span&gt; parameter&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; parameter&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;hasParameterAnnotation&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;Auth&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;token operator&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; parameter&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;getParameterType&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;equals&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;PlayerRequest&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h4&gt;2. AuthInterceptor에서 토큰 검증&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/a7f8b151b3f70f45ffcb38dccb11c73b/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C26.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABKElEQVR42o1RS26DMBTM/a/QE/QC3UXqprtUVUWLEpGoBDA2qIIADjb412e+bhRVnZX1mHnzhtkYB1LKzoGS4un5xT9GRhvGWT9g+QrkjSseR3oGTN79g7c/wYP3omlqABAWm834GjWwWCnlrms7caFtVDA/bTBK4jgWQsAcaFYMmjAMg+CYEVIUBcaYkCzPc5JltL7gir/G9FzyXmozn7OK7fqWFTnxDgFKcd007ZU2w4k+Kr2U7rPrLLEYE61nCyEft7uH7e7thM6l+PqmBKcJQqhslTadUNZ1kA1ObZIkhJBJDAgi7H18VlUlle56SQfc5HcbYYytYrgS2LYeR6BHQ3MHa+aRZ/uwVSk9/Zq7qin2mtnMeW6c/8Av5yUP57z7B4AGhf8Ad0d+a4BsYXMAAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    26&apos; title=&apos;&apos; src=&apos;/static/a7f8b151b3f70f45ffcb38dccb11c73b/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C26.png&apos; srcset=&apos;/static/a7f8b151b3f70f45ffcb38dccb11c73b/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C26.png 170w,
+/static/a7f8b151b3f70f45ffcb38dccb11c73b/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C26.png 340w,
+/static/a7f8b151b3f70f45ffcb38dccb11c73b/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C26.png 680w,
+/static/a7f8b151b3f70f45ffcb38dccb11c73b/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C26.png 1020w,
+/static/a7f8b151b3f70f45ffcb38dccb11c73b/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C26.png 1360w,
+/static/a7f8b151b3f70f45ffcb38dccb11c73b/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C26.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Authorization 헤더에 포함된 토큰 정보를 디코딩하며, 유효성을 검사한다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;수명이 아직 유효한지 확인한다.&lt;/li&gt;
+&lt;li&gt;시그니처의 시크릿 키가 일치하는지 확인한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;유효한 토큰이라고 확인이 되면, 인증된 회원이라고 인식하고 통과한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;3. PlayerArgumentResolver에서 파라미터 바인딩&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/1c98a949619af6ea82794cdf175eb547/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C27.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABSUlEQVR42o1Sy26DMBDM//9Cv6A/0FukXnqo1CaVCCE8EgyYYjhAsYkxMYYuJgGSQ9URQvZ6Zmd37VW/QNu2zQKqlS+vb3svhKNaiIvGdArk1VI8hjoN1XUQ+bIcwz7CQjTiXLGyLIEw2azG1aiBxEqpZTp+PtOyiKLQNPenMP6O8UVKiANtEIMGIeS6XkpInudJkhBCsixL05QxBpvNdnv0Azdl7wFNWTMmvYqH9LzOM2LYbpwQRinnHGSU0oNlmTvDcx3gbCIWFTW/qLGpuWwp2+f1x9P6c2t7IfJ9hMA8xnjvBRlrTlllI+zYh6IotBPHGAPhKga4YWLszLL8GVNWGlAbTKJVHYwaSoGJDAVrQl3XsxiqBPZwPYuBdcPAu16P/QFzz5o3/IUQ01Vp9LdPbxZJ555vJv2D8x+4c55eGJg3/wDQpJS/Ecx5bu4mjRoAAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    27&apos; title=&apos;&apos; src=&apos;/static/1c98a949619af6ea82794cdf175eb547/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C27.png&apos; srcset=&apos;/static/1c98a949619af6ea82794cdf175eb547/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C27.png 170w,
+/static/1c98a949619af6ea82794cdf175eb547/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C27.png 340w,
+/static/1c98a949619af6ea82794cdf175eb547/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C27.png 680w,
+/static/1c98a949619af6ea82794cdf175eb547/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C27.png 1020w,
+/static/1c98a949619af6ea82794cdf175eb547/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C27.png 1360w,
+/static/1c98a949619af6ea82794cdf175eb547/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C27.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Authorization 헤더에 포함된 토큰 정보를 디코딩하여, subject를 가져온다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/6aa4f4f25644e16a2a697e3560480e78/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C28.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABX0lEQVR42m1SWW6DMBTM/a/QE/QC/YvUn/5EbZoogYYtQQHCkoqAjc1iQzvgirhVRwjZ45k3zzwWXxqklK2GXoqn5xfTPeOobppuwnwK8UI3K2qY0A8DmM2HvbM8LJq2ZRUryxKCOWahVsqDwn3f6+U4Y6S8BUFg7I3j8Xi5XKABD9lohsf3fcdx0yTJ8zyO4yRJsixL05RSis16vYbN87zVanW9XlXRH/NYntd5luwsJ4oTSgjnHDZCyOFwMAzDdV1oUCIIwrqu1aXubQshH5evD8u3d8s9+6eT7yM8iiLTNNECYi3Lsm27KG5TEg/DEIIfM+Cc493eKMtClawmoDdshZQILAnZBgXvwIwNg7mb0SXU43i0DzZMH1zhxuUmotuoUtz9zpNufDdNM49KB47rTn5WrXGhUnRqOrp5UHP+MyodUBBKHcfBtH8lz38Ywtv/ABoPYxxTYIxBJoT4BrfhdZYFC8rVAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    28&apos; title=&apos;&apos; src=&apos;/static/6aa4f4f25644e16a2a697e3560480e78/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C28.png&apos; srcset=&apos;/static/6aa4f4f25644e16a2a697e3560480e78/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C28.png 170w,
+/static/6aa4f4f25644e16a2a697e3560480e78/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C28.png 340w,
+/static/6aa4f4f25644e16a2a697e3560480e78/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C28.png 680w,
+/static/6aa4f4f25644e16a2a697e3560480e78/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C28.png 1020w,
+/static/6aa4f4f25644e16a2a697e3560480e78/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C28.png 1360w,
+/static/6aa4f4f25644e16a2a697e3560480e78/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C28.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;subject에 포함된 memberId를 통해, PlayerService에서 Player를 가져온다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;4. Controller 도달&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/61e4aed8a62593b8ecd7f0ccb94fb4f1/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C29.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABWklEQVR42nVSy26DMBDM//9Cv6A/0FukXnqJ2pSIR0MMCUoEGIQImGAgBrcDTolTqXOw1rszu95dL7419H3faRh68fL65nhHhJq2vU6YoyAvdLFyyQmDlPAYXzvT9WG0XVdf6rIsQZjLLJSlNEg8DIOejtc1K8+n08m27P1+H0UROPCDNoqhCYKAEC+hNM/zOI4ppWmaJklSVRUu6/UaMt/3V6sV/HJKehOP6XmTp9R0SRjTijHOOWSMse12a9u253ngIAXqt22rmro/W4j+efn+tPz4dL1jcDgEAYqHYeg4DkqhrOu6ZLfLzkXKB58WcRSCcBMD5Bibll2WhUp5mYC34SqEwKgxKsPYVDVvrwKEpmnuYrwS7HE92sCklLNdFMVmY5imqXz3nifeeKKleVU6VCjLMsuy+l/oYqn2/GdVOsDBFAkhaOGh8vzDUKH7BwjVWDtjOGFjFj+GzHQ7VdgXngAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    29&apos; title=&apos;&apos; src=&apos;/static/61e4aed8a62593b8ecd7f0ccb94fb4f1/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C29.png&apos; srcset=&apos;/static/61e4aed8a62593b8ecd7f0ccb94fb4f1/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C29.png 170w,
+/static/61e4aed8a62593b8ecd7f0ccb94fb4f1/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C29.png 340w,
+/static/61e4aed8a62593b8ecd7f0ccb94fb4f1/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C29.png 680w,
+/static/61e4aed8a62593b8ecd7f0ccb94fb4f1/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C29.png 1020w,
+/static/61e4aed8a62593b8ecd7f0ccb94fb4f1/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C29.png 1360w,
+/static/61e4aed8a62593b8ecd7f0ccb94fb4f1/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C29.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;인가 처리와 파라미터 바인딩을 마치고 컨트롤러에 도달한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;토큰 갱신 (Refresh Token ➡️ Access Token 재발급)&lt;/h2&gt;
+&lt;h4&gt;0. Access Token 만료&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/307fc1718e2ede55115d319de82723b5/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C30.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAAA+klEQVR42p2S20oDMRCG9/0fwRfwDbzRC2961QtBbC24Htoiiq5tzcYkc0jGv26tLFW0fpAwE+bLhCSVmT21fPsSr5swXSRPylpES0iUVY5OB+N6hpqYEvVR1aqYLYM0nrvZRdFcQEwE52w0Ob+sEeT8sfoJTPhVKYbqXNCf4KNt4Iz+iXjtqMYYUW19sNdGjrw+KsxVkIWn55aaNr5F2ja0HTYyImJxq2U9nd89ND5yIHYYovYzX7KIHp4MD46Hg8ns/pVvmuSSFrM/yeBq/ngxGvvWBVaXxH6jJ7fOee+RYxVp2UvuLmUr255y+b/cgadPOz/pW1AmIu86D4PjSGn+qQAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    30&apos; title=&apos;&apos; src=&apos;/static/307fc1718e2ede55115d319de82723b5/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C30.png&apos; srcset=&apos;/static/307fc1718e2ede55115d319de82723b5/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C30.png 170w,
+/static/307fc1718e2ede55115d319de82723b5/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C30.png 340w,
+/static/307fc1718e2ede55115d319de82723b5/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C30.png 680w,
+/static/307fc1718e2ede55115d319de82723b5/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C30.png 1020w,
+/static/307fc1718e2ede55115d319de82723b5/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C30.png 1360w,
+/static/307fc1718e2ede55115d319de82723b5/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C30.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Access Token로 인가처리를 하다가 만료된 Access Token이면 &lt;code class=&quot;language-text&quot;&gt;토큰이 만료되었다&lt;/code&gt;는 예외를 응답한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;1. Access Token 재발급 요청&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/dcd232206a85b119d6b64de4076a788d/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C31.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABDUlEQVR42o2SzW6DMAyAef832AvsDXrpZZddumO3VeqEmJpqbYGSFfLnOEkzM6YOBEj9hKII+wvYThJ7eO9tj+Dd4ul5k+4oZADsEEpONPqL8QK8xmAsovPoQ/eEGNcf2XqbkRxCuPboPpNUCncc2Dcwbs4SDYb+v1BeIyStcQid1crWtwGJ4QJBYTgrR0dw7SrlSum4tAZsHPEnG/QaLK/4a/qZHcq81spAVWveaKGhUVSKm5VpR4U+LlcPy5fVlrETz48HdizY16ksCgCIU/zLRLrP3943QgjnHAm0IiKFx9VOyKKppZDtANoexxllRu6y29l2I6E3v62+U77e5HgHA/l2w2B0kybp+vIDmeKCPmSSML0AAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    31&apos; title=&apos;&apos; src=&apos;/static/dcd232206a85b119d6b64de4076a788d/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C31.png&apos; srcset=&apos;/static/dcd232206a85b119d6b64de4076a788d/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C31.png 170w,
+/static/dcd232206a85b119d6b64de4076a788d/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C31.png 340w,
+/static/dcd232206a85b119d6b64de4076a788d/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C31.png 680w,
+/static/dcd232206a85b119d6b64de4076a788d/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C31.png 1020w,
+/static/dcd232206a85b119d6b64de4076a788d/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C31.png 1360w,
+/static/dcd232206a85b119d6b64de4076a788d/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C31.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Access Token이 만료되었다는 응답을 받으면 Refresh Token을 가지고 토큰 재발급 요청을 한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;2. 저장되어 있는 Refresh Token 인지 확인&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/d034626de7ed6eef44ed2a51887c36e8/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C32.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABGElEQVR42oWSwU7DMAyG9/6PwAPwCFzgwIXLOCDB1o6qwCh060qZtiZp0sZOcZNqSkYRn3KIbP9J/Duz3gMAWg8EfXV7F6UZpaRSbQgVz3yxCxkLGkORh+XqMU5pg4jGw11zLqYiP4IAUkpjDwriiP+L3RM0GrBrQkwxJdjb5ybfbjlnQ4dSUs66gLyFzbF9qZq96GjPpRKCK6W6rhvEWsPl9fzi5n6+iLP1uizLzLL/ruL8kHzJpGyeNuK1klHRJO/58youdrtRTKQfxWIZMca01nSqtgyeaiQDK65JL7rh3YhAMpcdxayuOeennn2HlDa1goPURwmntgPDXLETm4DeBP714yBDsZl0+y8mRkWjV79+0iTOlx+XvYCQ2y6XCQAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    32&apos; title=&apos;&apos; src=&apos;/static/d034626de7ed6eef44ed2a51887c36e8/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C32.png&apos; srcset=&apos;/static/d034626de7ed6eef44ed2a51887c36e8/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C32.png 170w,
+/static/d034626de7ed6eef44ed2a51887c36e8/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C32.png 340w,
+/static/d034626de7ed6eef44ed2a51887c36e8/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C32.png 680w,
+/static/d034626de7ed6eef44ed2a51887c36e8/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C32.png 1020w,
+/static/d034626de7ed6eef44ed2a51887c36e8/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C32.png 1360w,
+/static/d034626de7ed6eef44ed2a51887c36e8/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C32.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;나아가의 DB에 저장되어 있는 Refresh Token인지 확인한다.&lt;/li&gt;
+&lt;li&gt;토큰의 유효성(수명, 시크릿 키)와는 상관 없이, DB에 저장되어 있는 Refresh Token만 사용가능한 토큰이라고 판단한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;3. Refresh Token을 삭제&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/c32812bb5a532c5e32bab7302f05c05e/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C33.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABA0lEQVR42o1Sy27CMBDk/z+hH9BP4FIOvXCBQ6UKCIcIaGgJCTlA7MiP3TXd2Cg4DaoYWfFqdmfXnnh0jYCIJgIhjN+nqzTjlNLa9MHFo1gcKOdBzjHzsVx/JikHROQihDF/xVwUM4SolAqNejzRE2I/McS8d03uYmZ0I7bfh588l1K0N1SKc6GIv9JgfjFArdRYK6XUWltrWzEAvr7NXibz2SLJdruyLDOPinFpTg0ca7OpVCXt/mzSr8M6SYqiuIkZ6f64WK6EEADAXcGj9Y8IvXl8YA548aQuexOLuubDdHd2A4f+MywUB7Hr4TpY/kf2xe6h209N7l6YHrykhwi+/ALfyIJzEkMu2AAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    33&apos; title=&apos;&apos; src=&apos;/static/c32812bb5a532c5e32bab7302f05c05e/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C33.png&apos; srcset=&apos;/static/c32812bb5a532c5e32bab7302f05c05e/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C33.png 170w,
+/static/c32812bb5a532c5e32bab7302f05c05e/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C33.png 340w,
+/static/c32812bb5a532c5e32bab7302f05c05e/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C33.png 680w,
+/static/c32812bb5a532c5e32bab7302f05c05e/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C33.png 1020w,
+/static/c32812bb5a532c5e32bab7302f05c05e/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C33.png 1360w,
+/static/c32812bb5a532c5e32bab7302f05c05e/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C33.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;재발급 요청에 쓴 Refresh Token은 더이상 사용할 수 없는 토큰이므로 &lt;code class=&quot;language-text&quot;&gt;무조건 삭제&lt;/code&gt;한다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code class=&quot;language-text&quot;&gt;올바른 사용자&lt;/code&gt;, Refresh Token을 사용하여 새로운 Access Token과 Refresh Token을 발급할 것이므로 이전 토큰은 삭제한다.&lt;/li&gt;
+&lt;li&gt;&lt;code class=&quot;language-text&quot;&gt;올바르지 않은 사용자&lt;/code&gt;, 탈취당하거나 이미 만료된 Refresh Token이라면 이 토큰은 더 이상 사용되면 안되는 토큰이므로 삭제한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;4. 토큰 재발급&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/3390c4e871ef1d7bf9c958024ad25edb/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C34.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABOElEQVR42o1SyW7CMBTk/z+hH9A/6Kk9cOkFTpVYShtECFlsZ4+deHf6CBVJQUId+WA/zzy9GXvWT2CMkRMYo1/m7xvvCFdKKQ1Q8rwZaECeTcWXkhtgnYPKx2a32u373iGEUkL8jGVlQzDuug663IqtteMg1lWtjAu6jqo4Co9BuE0alOa+7zPGYI5H4lbZ5bGZe1VYCTi6CRNoQJ5dqqKlhzCOkoQxCpWOc6vVqRRxLTDTiCrQBwU/5Hyf8bThQojfsbU2z6+Lp7flYrUNfJ8QEgzI87wsiiwlFetAn9QS2kW1IiXFGI+evRNarTeUUnACXfUAGAyChUW5+sLsm7BPfF4IkpByFNOmgQyunp2bGjwfldHwRGpoBk8xeh6ux8DcHfo73IjdfdoP8Ed8/WFgWP4Dl1x+AL+Ge/q/zN31AAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    34&apos; title=&apos;&apos; src=&apos;/static/3390c4e871ef1d7bf9c958024ad25edb/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C34.png&apos; srcset=&apos;/static/3390c4e871ef1d7bf9c958024ad25edb/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C34.png 170w,
+/static/3390c4e871ef1d7bf9c958024ad25edb/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C34.png 340w,
+/static/3390c4e871ef1d7bf9c958024ad25edb/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C34.png 680w,
+/static/3390c4e871ef1d7bf9c958024ad25edb/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C34.png 1020w,
+/static/3390c4e871ef1d7bf9c958024ad25edb/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C34.png 1360w,
+/static/3390c4e871ef1d7bf9c958024ad25edb/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C34.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Refresh Token에 대한 고민점&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Refresh Token으로 재발급 요청을 했을 때 무조건 Access Token을 재발급 해주면, Refresh Token이 기간이 긴 Access Token이라는 생각이 들었다.&lt;/li&gt;
+&lt;li&gt;Refresh Token도 탈취 가능성이 있는데 어떤 검증을 해야할까?&lt;/li&gt;
+&lt;li&gt;현실적으로 어떤 검증을 할 수 있을지 고민했는데, 간단하게 &lt;code class=&quot;language-text&quot;&gt;Access Token이 만료되지 않았는데 재발급 요청한 상황&lt;/code&gt;은 해당 Refresh Token은 탈취되었다고 판단했다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Access Token이 만료되었고, Refresh Token이 만료되지 않았다면 새로운 토큰 한 쌍을 발급하고 새로 저장한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/a86944d4471ccab31820049d4ea5a51a/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C35.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABK0lEQVR42o1Ry07DMBDs/38CH8AfcIIDopwKPSDlpRaVOMF5OrTEJiSOH2zstkmpQB35YO/u7M6sZ3oCIUQ3gRD9zf2jt0Zaac55b2AvJitmU7INKQOpFERe/JWz2mitsiwryzIMQ0JIURRN00CX32Qp5VTI526XYOy4bpKmKIqCIMjzHCHEGIP5/5Gh/fNy+TCfY4zhOcgBPYMgDWVQPJDh2X7Rt/cEpylj1NIgHccxjAWVSfGR1lxIZQZwGNu27V5234vr28XV3dPC8aMwBEuRQVWRLWurRmR1tyHfhPFo264RDnwPxI+eX+PMcT1KKTiBrnaxIAz69lJZsbBJOEPkkN2TaV2DmKPnvbO/MXo21ePC1An02TEfeUpW59u+dPLxY8FwdwHsXn4Amat7+W2TywgAAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    35&apos; title=&apos;&apos; src=&apos;/static/a86944d4471ccab31820049d4ea5a51a/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C35.png&apos; srcset=&apos;/static/a86944d4471ccab31820049d4ea5a51a/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C35.png 170w,
+/static/a86944d4471ccab31820049d4ea5a51a/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C35.png 340w,
+/static/a86944d4471ccab31820049d4ea5a51a/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C35.png 680w,
+/static/a86944d4471ccab31820049d4ea5a51a/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C35.png 1020w,
+/static/a86944d4471ccab31820049d4ea5a51a/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C35.png 1360w,
+/static/a86944d4471ccab31820049d4ea5a51a/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C35.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;h4&gt;5. 응답&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/2163a79ce9c4b079b299fdb01577ce77/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C36.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABcElEQVR42n1SyU7DMBDl/3+BO2cunBASqhAHVCQqRaVtSrMRx1ndJHYWb2EStzQgxMiKZhy/eW+efTXMQkrZz0JKcff4tLa9QQ+cczGFSaa/8moONlt6CqU17Kzed9buMAwaY5ymqeu6WZYlSdI0DXT5DVZKzYWUxyNCoWVZCCHP8zabTRzHkFBKgf8/MLRfLl8Xi0UYhlCOchQIGhVBAodP4I7Vh08UYcwYHcu2hZNBEAAh6IyiCAhBiCEA2q7rTrKFkDf3L9cPy9vnlbXdF1n6tnU+XK8ockJInucwsOM40MX3fdu2jfjLzPsAr9frlJS0F0qOhsrJWOOxUaumEOe4yK6rilEal62dMFTxupd1r3qppdLivDiU8uTIj5n15AdhPKO8bIVZAJjbycX4Cr6dm4HHWgs5WplSjiueM+EWnU86r+g80mVMtBxGEX8wG3LWc9r2cdngY5NWLSIsIk00fhkum7xu4fLM4wO3odEXRX52zTxXYt8AAAAASUVORK5CYII=&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    36&apos; title=&apos;&apos; src=&apos;/static/2163a79ce9c4b079b299fdb01577ce77/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C36.png&apos; srcset=&apos;/static/2163a79ce9c4b079b299fdb01577ce77/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C36.png 170w,
+/static/2163a79ce9c4b079b299fdb01577ce77/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C36.png 340w,
+/static/2163a79ce9c4b079b299fdb01577ce77/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C36.png 680w,
+/static/2163a79ce9c4b079b299fdb01577ce77/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C36.png 1020w,
+/static/2163a79ce9c4b079b299fdb01577ce77/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C36.png 1360w,
+/static/2163a79ce9c4b079b299fdb01577ce77/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C36.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;새로운 Access Token과 Refresh Token을 안드로이드로 응답한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;회원 탈퇴 &amp;#x26; 로그아웃&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;회원 탈퇴와 로그아웃 또한 API가 존재한다.&lt;/p&gt;
+&lt;h4&gt;회원 탈퇴&lt;/h4&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;AuthToken(Refresh Token, Access Token) 삭제&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;이미 어딘가에 발급된 Refresh Token을 사용하지 못하게 하기 위함&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;회원 삭제&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;카카오에게 해당 회원 연결 끊기 요청 발송&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;API 문서 (&lt;a href=&quot;https://developers.kakao.com/docs/latest/ko/kakaologin/rest-api#unlink&quot;&gt;링크&lt;/a&gt;)&lt;/p&gt;
+&lt;h4&gt;로그아웃&lt;/h4&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;AuthToken(Refresh Token, Access Token) 삭제&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;이미 어딘가에 발급된 Refresh Token을 사용하지 못하게 하기 위함&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;카카오에게 해당 회원 로그아웃 요청 발송&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;API 문서 (&lt;a href=&quot;https://developers.kakao.com/docs/latest/ko/kakaologin/rest-api#logout&quot;&gt;링크&lt;/a&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;고려사항&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;연결 끊기, 로그아웃 요청에서 Kakao Access Token 필요&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;현재 Kakao Access Token을 서버에서 보관하지 않는다.&lt;/li&gt;
+&lt;li&gt;그래서 JWT Access Token 내에 있는 Kakao id로 해당 요청들을 보내서 해당 회원이 연결을 끊고 로그아웃 했다고 알린다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1&gt;👍 마치며&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;OAuth 2.0과 JWT 토큰을 이용하여 로그인을 구현하였다.&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;아직 고려할 점이 많다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;카카오 뿐 아니라 다른 소셜 로그인이 붙는다면 AuthClient, AuthInfo 추상화&lt;/li&gt;
+&lt;li&gt;더 안전한 Refresh Token을 통한 토큰 재발급 프로세스&lt;/li&gt;
+&lt;li&gt;카카오의 Access Token을 현재는 서버에 저장하지 않지만, 카카오의 리소스가 로그인 접속 시, 지속적으로 필요하면 저장할 필요가 있음&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;개념적인 부분과 나아가 서버의 적용된 내용의 프로세스에 대해서 대략적으로 설명한다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;혹시 코드가 궁금하다면 여기(&lt;a href=&quot;&quot;&gt;링크&lt;/a&gt;)를 클릭해주세요.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</content:encoded></item><item><title><![CDATA[🤔 작성 가이드]]></title><description><![CDATA[1. 포스트 추가하기  경로에 새로운 마크다운 파일을 생성하여 여러분의 글을 추가할 수 있습니다. 1-…]]></description><link>https://2023-naaga.github.io/writing-guide-kr/</link><guid isPermaLink="false">https://2023-naaga.github.io/writing-guide-kr/</guid><pubDate>Sat, 03 Apr 2021 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;1. 포스트 추가하기&lt;/h2&gt;
 &lt;p&gt;&lt;code class=&quot;language-text&quot;&gt;contents/post&lt;/code&gt; 경로에 새로운 마크다운 파일을 생성하여 여러분의 글을 추가할 수 있습니다.&lt;/p&gt;
 &lt;h3&gt;1-1. 포스트 파일 구조&lt;/h3&gt;
 &lt;p&gt;새로운 문서를 추가하는 방법에는 두가지가 있습니다. 첫번째는 디렉토리 없이 문서를 생성하는 방법입니다. 만약 여러분이 Javascript 에 관한 문서를 생성한다면, &lt;code class=&quot;language-text&quot;&gt;about-javascript.md&lt;/code&gt; 파일을 &lt;code class=&quot;language-text&quot;&gt;contents/posts&lt;/code&gt; 디렉토리에 추가할 수 있습니다.&lt;/p&gt;
