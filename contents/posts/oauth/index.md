@@ -416,6 +416,7 @@ Content-Type: application/json
 - 연결 끊기, 로그아웃 요청에서 Kakao Access Token 필요
     - 현재 Kakao Access Token을 서버에서 보관하지 않는다.
     - 그래서 JWT Access Token 내에 있는 Kakao id로 해당 요청들을 보내서 해당 회원이 연결을 끊고 로그아웃 했다고 알린다.
+
 ---
 
 ## 👍 마치며
