@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[RSS Feed of naaga]]></title><description><![CDATA[나는 오늘 아무데나 가기로 했다.]]></description><link>https://2023-naaga.github.io</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 24 Aug 2023 15:48:45 GMT</lastBuildDate><item><title><![CDATA[나아가, 소셜 로그인 적용기 (OAuth 2.0, JWT,  AccessToken, RefreshToken)]]></title><description><![CDATA[작성자: 루카(github…]]></description><link>https://2023-naaga.github.io/oauth/</link><guid isPermaLink="false">https://2023-naaga.github.io/oauth/</guid><pubDate>Thu, 24 Aug 2023 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;작성자: 루카&lt;a href=&quot;https://github.com/dooboocookie&quot;&gt;(github 링크)&lt;/a&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[RSS Feed of naaga]]></title><description><![CDATA[나는 오늘 아무데나 가기로 했다.]]></description><link>https://2023-naaga.github.io</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 24 Aug 2023 15:49:17 GMT</lastBuildDate><item><title><![CDATA[나아가, 소셜 로그인 적용기 (OAuth 2.0, JWT,  AccessToken, RefreshToken)]]></title><description><![CDATA[작성자: 루카(github…]]></description><link>https://2023-naaga.github.io/oauth/</link><guid isPermaLink="false">https://2023-naaga.github.io/oauth/</guid><pubDate>Thu, 24 Aug 2023 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;작성자: 루카&lt;a href=&quot;https://github.com/dooboocookie&quot;&gt;(github 링크)&lt;/a&gt;&lt;/p&gt;
 &lt;h2&gt;🎯 글의 목적&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -744,12 +744,11 @@
 &lt;p&gt;연결 끊기, 로그아웃 요청에서 Kakao Access Token 필요&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;현재 Kakao Access Token을 서버에서 보관하지 않는다.&lt;/li&gt;
-&lt;li&gt;
-&lt;h2&gt;그래서 JWT Access Token 내에 있는 Kakao id로 해당 요청들을 보내서 해당 회원이 연결을 끊고 로그아웃 했다고 알린다.&lt;/h2&gt;
-&lt;/li&gt;
+&lt;li&gt;그래서 JWT Access Token 내에 있는 Kakao id로 해당 요청들을 보내서 해당 회원이 연결을 끊고 로그아웃 했다고 알린다.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;hr&gt;
 &lt;h2&gt;👍 마치며&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;OAuth 2.0과 JWT 토큰을 이용하여 로그인을 구현하였다.&lt;/li&gt;
