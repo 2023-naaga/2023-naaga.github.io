@@ -1,6 +1,6 @@
 ---
 title: "나아가, 소셜 로그인 적용기 (OAuth 2.0, JWT,  AccessToken, RefreshToken)"
-description: "OAuth 적용기"
+description: "OAuth와 JWT를 통하여 소셜 로그인 기능 구현한 적용기이다. AccessToken과 RefreshToken을 발급하고 확인하는 과정을 담고있다."
 date: 2023-08-24
 update: 2023-08-24
 tags:
@@ -10,25 +10,30 @@ tags:
 
 작성자: 루카[(github 링크)](https://github.com/dooboocookie)
 
-# 🎯 글의 목적
+## 🎯 글의 목적
+
 - `나아가` 서비스에 로그인 기능 구현
     - 로그인 시 필요한 기술에 대한 학습 및 적용기에 대한 설명
     - 더불어 팀원들에게 지식 전달 측면에서 작성하는 글
 - 나아가 서버에서 소셜 로그인을 적용에 대해서 `전체적인 흐름`을 설명한다.
 - `Access Token과 Refresh Token` 적용 방식을 설명한다.
 ---
-# ❓소셜 로그인을 사용하는 이유
+## ❓소셜 로그인을 사용하는 이유
+- 
 - 나아가 서비스 특성상 회원가입, 로그인 과정이 단순해야하므로 소셜 로그인 기능 구현 필요
 - 사용자의 선택사항을 최대한으로 줄이기 위해서, `일단 카카오 소셜 로그인만` 적용할 예정
 
 ---
 
-# 🔑 Oauth2.0 개념
+## 🔑 Oauth2.0 개념
+
 - OAuth 2.0은 인증을 위한 표준 프로토콜이다.
 - 다른 플랫폼(구글, 카카오, 깃헙, ...)의 `리소스` 접근 권한을 위임 받는 것이다.
 
-## 용어
-### Resouce Server (자원 서버) & Authorization Server (권한 부여 서버)
+### 용어
+
+#### Resouce Server (자원 서버) & Authorization Server (권한 부여 서버)
+
 - 사용하고자 하는 자원을 보관하거나 접근 권하는 주는 서버를 의미한다.
     - 구글, 카카오, 깃헙, ...
 - Resource Server
@@ -37,25 +42,27 @@ tags:
     - 자원에 접근할 권한(토큰)을 부여해주는 서버
 - RFC6749([링크](https://datatracker.ietf.org/doc/html/rfc6749#section-1.2)) 에 의하면 이 둘은 따로 보지만, 같이 두는 경우도 있음.
 
-### Resouce Owner (자원의 소유자)
+#### Resouce Owner (자원의 소유자)
+
 - 사용하고자 `자원의 소유자`를 의미한다.
     - 나아가로 예시를 들면,
         - 나아가 앱을 사용하는 사용자
         - 카카오에 회원정보(리소스)를 보관중인 사람
 
-### Client (자원을 사용)
+#### Client (자원을 사용)
+
 - `자원을 사용`하고자 하는 주체를 의미한다
     - 나아가로 예시를 들면,
         - 나아가
         - 나아가에서는 기본적인 회원 정보를 사용한다.
 
-## Oauth2.0의 흐름
+### Oauth2.0의 흐름
 
 ![](https://velog.velcdn.com/images/dooboocookie/post/e6a62bef-db83-41f8-a884-5f3a23838e39/image.png)
 
 (출처: https://blog.naver.com/mds_datasecurity/222182943542)
 
-### 0. 클라이언트 등록
+#### 0. 클라이언트 등록
 
 ![](슬라이드2.png)
 
@@ -69,7 +76,7 @@ tags:
 - Resource Server가 Client임을 식별하기 위한 장치
 - Client Secret은 유출되지 않도록 조심
 
-### 1. 로그인 요청 (로그인 페이지 보여주기)
+#### 1. 로그인 요청 (로그인 페이지 보여주기)
 
 ![](슬라이드3.png)
 
@@ -82,9 +89,7 @@ tags:
     - response_type: 응답을 어떤 타입으로 받을지 설정, 인가 코드로 응답을 받을 것이므로 code로 고정
     - ...
 
-
-
-### 2. 로그인 정보 제공하고 Authorization Code 발급 받기
+#### 2. 로그인 정보 제공하고 Authorization Code 발급 받기
 
 ![](슬라이드4.png)
 
@@ -92,22 +97,21 @@ tags:
 - Authorzation Code를 응답 받는다.
 - Redirect URI로 리다이렉트 된다.
 
-
-### 3. Authorization Code ↔️ OAuth Access Token 교환
+#### 3. Authorization Code ↔️ OAuth Access Token 교환
 
 ![](슬라이드5.png)
 
 - Redirect된 나아가 서버에서 Authorization Code를 가지고, 권한 부여 서버로 Access Token을 발급 요청한다.
 - 권한 부여 서버가 Authorizaion Code에 대한 리소스 오너의 리소스로 접근 가능한 OAuth Access Token을 발급한다.
 
-### 4. 로그인 처리
+#### 4. 로그인 처리
 
 ![](슬라이드6.png)
 
 - 이제 클라이언트가 리소스 오너의 리소스를 리소스 서버로 부터 받아올 수 있는 OAuth Access Token이 있으므로 로그인 처리를 하면 된다.
 - 세션을 사용하던, JWT를 사용하던 사용자(리소스 오너)에게 로그인이 되었다는 응답을 준다.
 
-### 5. Access Token 으로 정보 조회
+#### 5. Access Token 으로 정보 조회
 
 ![](https://velog.velcdn.com/images/dooboocookie/post/1e0c64c3-cb29-49ae-ac43-d75155d67012/image.png)
 
@@ -115,7 +119,7 @@ tags:
 
 ---
 
-# 🪙 Token 방식 (JWT)
+## 🪙 Token 방식 (JWT)
 
 ### JWT 개념
 - JSON Web Token
@@ -138,13 +142,17 @@ tags:
   "alg": "HS512",
   "typ": "JWT"
 }
+
 ```
+
 #### 2. 페이로드
+
 - Claims이라고 불리는 토큰 자체 데이터를 포함한다.
     - Registered claims: 유효기간(exp), 토큰의 대상(sub), 발행처(iss), 발행 시간(iat), ...
     - Public claims: IANA JWT Registry에 등록해서 다른 조직과 충돌을 피하고자 하는 공용 claims을 등록한다.
     - Prviate claims: 사용자의 권한 정보 같이 어플리케이션 내에서만 사용되는 클레임을 나타낸다.
-- Base64Url
+- Base64Url로 인코딩한다.
+
 ```
 {
   "sub": "{\"memberId\":1,\"authId\":1,\"authType\":\"KAKAO\"}",
@@ -153,17 +161,21 @@ tags:
 ```
 
 #### 3. 시그니처
+
 - 토큰의 무결성을 보장하는 정보를 포함한다.
 - 아래의 정보를 헤더에서 명시된 알고리즘으로 생성한다.
     - 인코딩된 헤더.인코딩된 페이로드
     - 시크릿 키
+
 ```
 HMACSHA512(
   base64UrlEncode(header) + "." + base64UrlEncode(payload),
   시크릿 키
 )
 ```
+
 ### Access Token
+
 - 사용자의 권한을 나타내는 토큰
 - 토큰 자체로 토큰의 담겨있는 유저의 정보에 접근이 가능하다.
 - 탈취 위험성 때문에 토큰의 수명이 짧다.
@@ -175,8 +187,10 @@ HMACSHA512(
 
 ---
 
-# 📄 나아가 적용
-## 로그인 과정
+## 📄 나아가 적용
+
+### 로그인 과정
+
 - OAuth와 JWT를 기반으로 로그인 기능을 구현한다.
 - 일단 나아가 같은 경우, 안드로이드 앱을 기반으로 한다.
 - 안드로이드 단에서는 Kakao SDK for Android([링크](https://developers.kakao.com/docs/latest/ko/kakaologin/android))를 기반으로 하여 로그인 기능을 구현하였다.
@@ -216,7 +230,6 @@ Content-Type: application/json
 4. AuthInfo 객체를 생성해서 반환한다.
     - 카카오에서 전달 받은 유저의 정보를 바인딩하기 위한 DTO이다.
 
-
 #### 4. 회원을 조회하거나 저장하거나
 
 ![](슬라이드20.png)
@@ -224,7 +237,6 @@ Content-Type: application/json
 - AuthInfo 담겨 있는 email 정보를 토대로 해당 회원이 있는지 파악한다.
     - 있으면, 해당 회원을 find 해온다.
     - 없으면, 새로운 회원을 create 한다.
-
 
 #### 5. JWT 토큰 생성
 
@@ -237,17 +249,18 @@ Content-Type: application/json
     - Oauth 인증처
     - Oauth 서버에서 사용하는 회원 아이디
     - 수명
+
 ```
 {
   "sub": "{\"memberId\":1,\"authId\":1,\"authType\":\"KAKAO\"}",
   "exp": 4845877047
 }
 ```
+
 - 수명
     - Access Token은 30분
     - Refresh Token은 14일
 - Access Token과 Refresh Token를 한 쌍으로 하는 AuthToken 엔티티 객체를 생성하여 반환한다.
-
 
 #### 6. JWT 토큰 저장
 
@@ -264,7 +277,6 @@ Content-Type: application/json
 |2|4r324r3.3r234b4.32r443|4r324r3.3r234tg.32r443|4|
 |...|...|...|...|
 
-
 #### 7. 응답
 
 ![](슬라이드23.png)
@@ -276,7 +288,7 @@ Content-Type: application/json
 
 - 전체적인 흐름
 
-## 인가 과정
+### 인가 과정
 
 #### 1. Interceptor와 Argument Resolver
 - AuthInterceptor의 역할
@@ -331,7 +343,7 @@ Content-Type: application/json
 
 - 인가 처리와 파라미터 바인딩을 마치고 컨트롤러에 도달한다.
 
-## 토큰 갱신 (Refresh Token ➡️ Access Token 재발급)
+### 토큰 갱신 (Refresh Token ➡️ Access Token 재발급)
 
 #### 0. Access Token 만료
 
@@ -341,13 +353,11 @@ Content-Type: application/json
 
 #### 1. Access Token 재발급 요청
 
-
 ![](슬라이드31.png)
 
 - Access Token이 만료되었다는 응답을 받으면 Refresh Token을 가지고 토큰 재발급 요청을 한다.
 
 #### 2. 저장되어 있는 Refresh Token 인지 확인
-
 
 ![](슬라이드32.png)
 
@@ -361,7 +371,6 @@ Content-Type: application/json
 - 재발급 요청에 쓴 Refresh Token은 더이상 사용할 수 없는 토큰이므로 `무조건 삭제`한다.
     - `올바른 사용자`, Refresh Token을 사용하여 새로운 Access Token과 Refresh Token을 발급할 것이므로 이전 토큰은 삭제한다.
     - `올바르지 않은 사용자`, 탈취당하거나 이미 만료된 Refresh Token이라면 이 토큰은 더 이상 사용되면 안되는 토큰이므로 삭제한다.
-
 
 #### 4. 토큰 재발급
 
@@ -377,32 +386,37 @@ Content-Type: application/json
 
 #### 5. 응답
 
-
 ![](슬라이드36.png)
 
 - 새로운 Access Token과 Refresh Token을 안드로이드로 응답한다.
 
-## 회원 탈퇴 & 로그아웃
+### 회원 탈퇴 & 로그아웃
 
 - 회원 탈퇴와 로그아웃 또한 API가 존재한다.
+
 #### 회원 탈퇴
+
 1. AuthToken(Refresh Token, Access Token) 삭제
     - 이미 어딘가에 발급된 Refresh Token을 사용하지 못하게 하기 위함
 2. 회원 삭제
 3. 카카오에게 해당 회원 연결 끊기 요청 발송
     - API 문서 ([링크](https://developers.kakao.com/docs/latest/ko/kakaologin/rest-api#unlink))
 #### 로그아웃
+
 1. AuthToken(Refresh Token, Access Token) 삭제
     - 이미 어딘가에 발급된 Refresh Token을 사용하지 못하게 하기 위함
 2. 카카오에게 해당 회원 로그아웃 요청 발송
     - API 문서 ([링크](https://developers.kakao.com/docs/latest/ko/kakaologin/rest-api#logout))
 
 #### 고려사항
+
 - 연결 끊기, 로그아웃 요청에서 Kakao Access Token 필요
     - 현재 Kakao Access Token을 서버에서 보관하지 않는다.
     - 그래서 JWT Access Token 내에 있는 Kakao id로 해당 요청들을 보내서 해당 회원이 연결을 끊고 로그아웃 했다고 알린다.
+---
 
-# 👍 마치며
+## 👍 마치며
+
 - OAuth 2.0과 JWT 토큰을 이용하여 로그인을 구현하였다.
 - 아직 고려할 점이 많다.
     - 카카오 뿐 아니라 다른 소셜 로그인이 붙는다면 AuthClient, AuthInfo 추상화
