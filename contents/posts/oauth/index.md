@@ -69,14 +69,16 @@ tags:
 ![](슬라이드2.png)
 
 - Client가 Resource Server의 자원을 이용하기 위해 등록하는 과정이다.
-    - Resource Server에서 Client임을 식별하기 위한 정보가 필요하다.
-1.  Redirect URI
-- 로그인 인증 성공 시, 리다이렉트 시킬 위치를 지정하는 URI
-- OAuth 과정에서 정보들(Authorization Code)을 다른 URI로 탈취당하지 않기 위함
-- https만 허용
-2. Client ID, Secret
-- Resource Server가 Client임을 식별하기 위한 장치
-- Client Secret은 유출되지 않도록 조심
+    - Resource Server에서 Client임을 식별하기 위한 정보가 필요하다. 
+
+1. Redirect URI
+   - 로그인 인증 성공 시, 리다이렉트 시킬 위치를 지정하는 URI
+   - OAuth 과정에서 정보들(Authorization Code)을 다른 URI로 탈취당하지 않기 위함
+   - https만 허용
+
+2. Client ID, Client Secret
+   - Resource Server가 Client임을 식별하기 위한 장치
+   - Client Secret은 유출되지 않도록 조심
 
 #### 1. 로그인 요청 (로그인 페이지 보여주기)
 
