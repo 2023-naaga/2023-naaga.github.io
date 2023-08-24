@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[RSS Feed of naaga]]></title><description><![CDATA[나는 오늘 아무데나 가기로 했다.]]></description><link>https://2023-naaga.github.io</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 24 Aug 2023 15:34:11 GMT</lastBuildDate><item><title><![CDATA[나아가, 소셜 로그인 적용기 (OAuth 2.0, JWT,  AccessToken, RefreshToken)]]></title><description><![CDATA[작성자: 루카(github…]]></description><link>https://2023-naaga.github.io/oauth/</link><guid isPermaLink="false">https://2023-naaga.github.io/oauth/</guid><pubDate>Thu, 24 Aug 2023 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;작성자: 루카&lt;a href=&quot;https://github.com/dooboocookie&quot;&gt;(github 링크)&lt;/a&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[RSS Feed of naaga]]></title><description><![CDATA[나는 오늘 아무데나 가기로 했다.]]></description><link>https://2023-naaga.github.io</link><generator>GatsbyJS</generator><lastBuildDate>Thu, 24 Aug 2023 15:43:47 GMT</lastBuildDate><item><title><![CDATA[나아가, 소셜 로그인 적용기 (OAuth 2.0, JWT,  AccessToken, RefreshToken)]]></title><description><![CDATA[작성자: 루카(github…]]></description><link>https://2023-naaga.github.io/oauth/</link><guid isPermaLink="false">https://2023-naaga.github.io/oauth/</guid><pubDate>Thu, 24 Aug 2023 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;작성자: 루카&lt;a href=&quot;https://github.com/dooboocookie&quot;&gt;(github 링크)&lt;/a&gt;&lt;/p&gt;
 &lt;h2&gt;🎯 글의 목적&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;
@@ -11,9 +11,10 @@
 &lt;li&gt;나아가 서버에서 소셜 로그인을 적용에 대해서 &lt;code class=&quot;language-text&quot;&gt;전체적인 흐름&lt;/code&gt;을 설명한다.&lt;/li&gt;
 &lt;li&gt;
 &lt;h2&gt;&lt;code class=&quot;language-text&quot;&gt;Access Token과 Refresh Token&lt;/code&gt; 적용 방식을 설명한다.&lt;/h2&gt;
-&lt;h2&gt;❓소셜 로그인을 사용하는 이유&lt;/h2&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;❓소셜 로그인을 사용하는 이유&lt;/h2&gt;
+&lt;ul&gt;
 &lt;li&gt;나아가 서비스 특성상 회원가입, 로그인 과정이 단순해야하므로 소셜 로그인 기능 구현 필요&lt;/li&gt;
 &lt;li&gt;사용자의 선택사항을 최대한으로 줄이기 위해서, &lt;code class=&quot;language-text&quot;&gt;일단 카카오 소셜 로그인만&lt;/code&gt; 적용할 예정&lt;/li&gt;
 &lt;/ul&gt;
@@ -209,77 +210,105 @@
 &lt;h4&gt;1. 헤더&lt;/h4&gt;
 &lt;ul&gt;
 &lt;li&gt;토큰 타입이나 알고리즘에 대한 정보를 포함한다.&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Base64Url로 인코딩된다.&lt;/p&gt;
+&lt;li&gt;Base64Url로 인코딩된다.&lt;/li&gt;
+&lt;/ul&gt;
 &lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;{
-&quot;alg&quot;: &quot;HS512&quot;,
-&quot;typ&quot;: &quot;JWT&quot;
+  &quot;alg&quot;: &quot;HS512&quot;,
+  &quot;typ&quot;: &quot;JWT&quot;
 }&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h4&gt;2. 페이로드&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Claims이라고 불리는 토큰 자체 데이터를 포함한다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Registered claims: 유효기간(exp), 토큰의 대상(sub), 발행처(iss), 발행 시간(iat), ...&lt;/li&gt;
+&lt;li&gt;Public claims: IANA JWT Registry에 등록해서 다른 조직과 충돌을 피하고자 하는 공용 claims을 등록한다.&lt;/li&gt;
+&lt;li&gt;Prviate claims: 사용자의 권한 정보 같이 어플리케이션 내에서만 사용되는 클레임을 나타낸다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Base64Url로 인코딩한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;{
+  &quot;sub&quot;: &quot;{\&quot;memberId\&quot;:1,\&quot;authId\&quot;:1,\&quot;authType\&quot;:\&quot;KAKAO\&quot;}&quot;,
+  &quot;exp&quot;: 4845877047
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h4&gt;3. 시그니처&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;토큰의 무결성을 보장하는 정보를 포함한다.&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;아래의 정보를 헤더에서 명시된 알고리즘으로 생성한다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;인코딩된 헤더.인코딩된 페이로드&lt;/li&gt;
+&lt;li&gt;시크릿 키&lt;/li&gt;
+&lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;#### 2. 페이로드
-
-- Claims이라고 불리는 토큰 자체 데이터를 포함한다.
-    - Registered claims: 유효기간(exp), 토큰의 대상(sub), 발행처(iss), 발행 시간(iat), ...
-    - Public claims: IANA JWT Registry에 등록해서 다른 조직과 충돌을 피하고자 하는 공용 claims을 등록한다.
-    - Prviate claims: 사용자의 권한 정보 같이 어플리케이션 내에서만 사용되는 클레임을 나타낸다.
-- Base64Url로 인코딩한다.&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;{
-&quot;sub&quot;: &quot;{&quot;memberId&quot;:1,&quot;authId&quot;:1,&quot;authType&quot;:&quot;KAKAO&quot;}&quot;,
-&quot;exp&quot;: 4845877047
-}&lt;/p&gt;
-&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;#### 3. 시그니처
-
-- 토큰의 무결성을 보장하는 정보를 포함한다.
-- 아래의 정보를 헤더에서 명시된 알고리즘으로 생성한다.
-    - 인코딩된 헤더.인코딩된 페이로드
-    - 시크릿 키&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;HMACSHA512(
-base64UrlEncode(header) + &quot;.&quot; + base64UrlEncode(payload),
-시크릿 키
-)&lt;/p&gt;
-&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;### Access Token
-
-- 사용자의 권한을 나타내는 토큰
-- 토큰 자체로 토큰의 담겨있는 유저의 정보에 접근이 가능하다.
-- 탈취 위험성 때문에 토큰의 수명이 짧다.
-- stateless한 HTTP 통신에서 인증처리를 한 사용자임을 나타내기 위해 `Authorization` 헤더에 포함되어 요청이 간다.
-
-### Refresh Token
-- Access Token이 매우 짧은 수명을 갖고 있으므로, 그 시기마다 로그인 요청을 하지 않고 Refresh Token을 통해서 `Access Token을 재발급` 받기 위함이다.
-- Access Token에 비해 수명이 매우 길다.
-
----
-
-## 📄 나아가 적용
-
-### 로그인 과정
-
-- OAuth와 JWT를 기반으로 로그인 기능을 구현한다.
-- 일단 나아가 같은 경우, 안드로이드 앱을 기반으로 한다.
-- 안드로이드 단에서는 Kakao SDK for Android([링크](https://developers.kakao.com/docs/latest/ko/kakaologin/android))를 기반으로 하여 로그인 기능을 구현하였다.
-    - 위 OAuth 흐름에서 설명했던 내용 중, 인가 코드를 카카오 액세스 토큰으로 교환하는 것 까지 안드로이드에서 일어난다.
-
-#### 1. 카카오에서 Kakao Access Token을 받아온다.
-
-![](슬라이드17.png)
-
-- 카카오에게 유저가 로그인 정보를 제공하고 Kakao AccessToken을 제공 받는다.
-
-#### 2. 나아가 서버로 로그인 요청
-
-![](슬라이드18.png)
-
-- 나아가의 로그인 처리를 위해서 카카오에서 받급받은 Kakao Access Token을 가지고 로그인 요청을 한다.
-
-```http
-POST /auth
-Content-Type: application/json
-
-{
-		&quot;token&quot;: &quot;q1q2w2w3e3e4r4t5t6yu7u78&quot;,
-		&quot;type&quot;: &quot;KAKAO&quot;,
-}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;text&quot;&gt;&lt;pre class=&quot;language-text&quot;&gt;&lt;code class=&quot;language-text&quot;&gt;HMACSHA512(
+  base64UrlEncode(header) + &quot;.&quot; + base64UrlEncode(payload),
+  시크릿 키
+)&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h3&gt;Access Token&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;사용자의 권한을 나타내는 토큰&lt;/li&gt;
+&lt;li&gt;토큰 자체로 토큰의 담겨있는 유저의 정보에 접근이 가능하다.&lt;/li&gt;
+&lt;li&gt;탈취 위험성 때문에 토큰의 수명이 짧다.&lt;/li&gt;
+&lt;li&gt;stateless한 HTTP 통신에서 인증처리를 한 사용자임을 나타내기 위해 &lt;code class=&quot;language-text&quot;&gt;Authorization&lt;/code&gt; 헤더에 포함되어 요청이 간다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;Refresh Token&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Access Token이 매우 짧은 수명을 갖고 있으므로, 그 시기마다 로그인 요청을 하지 않고 Refresh Token을 통해서 &lt;code class=&quot;language-text&quot;&gt;Access Token을 재발급&lt;/code&gt; 받기 위함이다.&lt;/li&gt;
+&lt;li&gt;Access Token에 비해 수명이 매우 길다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2&gt;📄 나아가 적용&lt;/h2&gt;
+&lt;h3&gt;로그인 과정&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;OAuth와 JWT를 기반으로 로그인 기능을 구현한다.&lt;/li&gt;
+&lt;li&gt;일단 나아가 같은 경우, 안드로이드 앱을 기반으로 한다.&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;안드로이드 단에서는 Kakao SDK for Android(&lt;a href=&quot;https://developers.kakao.com/docs/latest/ko/kakaologin/android&quot;&gt;링크&lt;/a&gt;)를 기반으로 하여 로그인 기능을 구현하였다.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;위 OAuth 흐름에서 설명했던 내용 중, 인가 코드를 카카오 액세스 토큰으로 교환하는 것 까지 안드로이드에서 일어난다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;1. 카카오에서 Kakao Access Token을 받아온다.&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/04614d31142bdb27f1d6bbaea9e9e917/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAAA9klEQVR42p2S22rCQBCGfYg+Yh+oT9D20ifwwhu98UJaECxWkcSIosVIUg8xu9k5dbKUNh5K0Z9lWWb+b2eXmZqIMEu6yZxDIrK2+BEhNNqd92CmHlNNeCFiTRMESadxv160iAXBsRfplSK9wag/DEoPEVekpPIljMWs/nC3ih7VjuikIkI0xrC/6ChO9A3nDidJvCsf5jR6bOJz8hfeGhjHeZSYt2WW7nO5ZP0TtkBx5sJ1pruWPqn8D+w/BpP5R3cQFtbyVZX1tIjT5+bLU+t1dzjItTAQj6fzKAyKG56tTdtuPrUlt8DlkPkFAPZski5KbWr+AqUOgVa6l6dhAAAAAElFTkSuQmCC&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    17&apos; title=&apos;&apos; src=&apos;/static/04614d31142bdb27f1d6bbaea9e9e917/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png&apos; srcset=&apos;/static/04614d31142bdb27f1d6bbaea9e9e917/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png 170w,
+/static/04614d31142bdb27f1d6bbaea9e9e917/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png 340w,
+/static/04614d31142bdb27f1d6bbaea9e9e917/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png 680w,
+/static/04614d31142bdb27f1d6bbaea9e9e917/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png 1020w,
+/static/04614d31142bdb27f1d6bbaea9e9e917/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png 1360w,
+/static/04614d31142bdb27f1d6bbaea9e9e917/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C17.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;카카오에게 유저가 로그인 정보를 제공하고 Kakao AccessToken을 제공 받는다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;2. 나아가 서버로 로그인 요청&lt;/h4&gt;
+&lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
+      &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/fae8f5c070d730f1afe3112ced0dc8c4/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
+    &lt;span class=&apos;gatsby-resp-image-background-image&apos; style=&quot;padding-bottom: 56.470588235294116%; position: relative; bottom: 0; left: 0; background-image: url(&apos;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAALCAIAAADwazoUAAAACXBIWXMAABH+AAAR/gGTj/zDAAABSElEQVR42oVRS1KDQBDNGbyj1/EI6tIT6MKF2WThJpoFaiUEImWskCEwEGB+3TM2kG8VKV/1Ymqm36enB845a13KS60BEaVUByCYx+How4+oR5w+tACAAT2g2YyertnyBa0Do20LJEnn3ryvyaff9CDaExCT+A0Z5PfDzVUc3FI7gHYnQAAhhG2Fzu4Rd+RaVEHwXhSZUrpWplSgoDGiolEM2q56yHme+74fLhae5+Wc/+bKZyLeqk1lklILDc2fWGfwzH1HllIyxuaBz9YrOisDgC7e6iiTYSoSkqgMCdUa+2PTYPPZ9HXisUJk21pI9ZNWa15nJRmjBttUb2w6LePN/fP4bjierfiKJQlbR3GapGmRc2pyfTiSaZ5pGIXzWbdACm+MobVSkV1XF8m0tJxntBLq7qys+wdHstvL02fJFocI6gK6dH+8G3sXgwJPmwAAAABJRU5ErkJggg==&apos;); background-size: cover; display: block;&quot;&gt;&lt;/span&gt;
+  &lt;img class=&apos;gatsby-resp-image-image&apos; alt=&apos;    18&apos; title=&apos;&apos; src=&apos;/static/fae8f5c070d730f1afe3112ced0dc8c4/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png&apos; srcset=&apos;/static/fae8f5c070d730f1afe3112ced0dc8c4/e7570/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png 170w,
+/static/fae8f5c070d730f1afe3112ced0dc8c4/f46e7/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png 340w,
+/static/fae8f5c070d730f1afe3112ced0dc8c4/ca1dc/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png 680w,
+/static/fae8f5c070d730f1afe3112ced0dc8c4/02d09/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png 1020w,
+/static/fae8f5c070d730f1afe3112ced0dc8c4/9d567/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png 1360w,
+/static/fae8f5c070d730f1afe3112ced0dc8c4/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C18.png 1560w&apos; sizes=&apos;(max-width: 680px) 100vw, 680px&apos; style=&apos;width:100%;height:100%;margin:0;vertical-align:middle;position:absolute;top:0;left:0;&apos; loading=&apos;lazy&apos; decoding=&apos;async&apos;&gt;
+  &lt;/a&gt;
+    &lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;나아가의 로그인 처리를 위해서 카카오에서 받급받은 Kakao Access Token을 가지고 로그인 요청을 한다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&quot;gatsby-highlight&quot; data-language=&quot;http&quot;&gt;&lt;pre class=&quot;language-http&quot;&gt;&lt;code class=&quot;language-http&quot;&gt;POST /auth
+&lt;span class=&quot;token header&quot;&gt;&lt;span class=&quot;token header-name keyword&quot;&gt;Content-Type&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token header-value&quot;&gt;application/json&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;token application-json&quot;&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+		&lt;span class=&quot;token string-property property&quot;&gt;&quot;token&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;q1q2w2w3e3e4r4t5t6yu7u78&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+		&lt;span class=&quot;token string-property property&quot;&gt;&quot;type&quot;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;KAKAO&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h4&gt;3. 카카오 서버로 부터 정보를 받아온다.&lt;/h4&gt;
 &lt;p&gt;&lt;span class=&apos;gatsby-resp-image-wrapper&apos; style=&apos;position: relative; display: block; margin-left: auto; margin-right: auto; max-width: 680px; margin-bottom: 16px;&apos;&gt;
       &lt;a class=&apos;gatsby-resp-image-link&apos; href=&apos;/static/2d7e901f6eaf096d3be24abe724fa093/8cbfd/%EC%8A%AC%EB%9D%BC%EC%9D%B4%EB%93%9C19.png&apos; style=&apos;display: block&apos; target=&apos;_blank&apos; rel=&apos;noopener&apos;&gt;
